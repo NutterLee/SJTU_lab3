@@ -4,6 +4,8 @@
 #include<vector>
 #include<fstream>
 #include<string>
+#include<cctype>
+#include<algorithm>
 
 using namespace std;
 
@@ -19,6 +21,11 @@ bool is_a_word(const string& word1, const vector<string>& dictionary);
 //判断文件是否存在，不存在抛出异常，（要求重新输入在调用这个函数的那一层实现）
 void get_dictionary(const string& filename, vector<string>& dictionary);
 
+//判断是不是neighbor
+//bool is_neighbor(const string word1, const string word2);
+
+//判断一个word是不是在ladder（stack）里面
+bool is_in_ladder(const string word,  stack<string>& ladder);
 //错误处理类
 class invalid_word{};
 class word_length_error{};
@@ -31,40 +38,143 @@ int main()
 	string filename;
 	string word1;
 	string word2;
+
+	
 	while (true)
 	{
 		try
 		{
+			queue<stack<string>> words;
+			stack<string> final_result;
+
 			cout << "Dictionary file name? ";
-			cin >> filename;
-			cout << endl;
+			cin >> filename;			
 			get_dictionary(filename, dictionary);
+			
 			while (true)
 			{
 				try
 				{
-					cout << "Word #1 (or Enter q to quit):";
+					cout <<endl<< "Word #1 (or Enter q to quit):";
 					cin >> word1;
 					if (word1 == "q") return 0;
 					cout << "Word #2 (or Enter q to quit):";
 					cin >> word2;
 					if (word2=="q")return 0;
+
+					//不管输入的是大写还是小写，一律转换成小写
+					transform(word1.begin(), word1.end(), word1.begin(), ::tolower);
+					transform(word2.begin(), word2.end(), word2.begin(), ::tolower);
+					//长度不等，相同单词，不是单词，都报错
 					if (word1.length() != word2.length()) throw word_length_error();
 					if (word1 == word2) throw same_word();
 					if (!is_a_word(word1,dictionary) || !is_a_word(word2,dictionary))throw invalid_word();
+
 					//接下来应该是具体处理过程，两个单词之间的ladder建立完毕则进入下一轮循环
+					stack<string> word1_container;
+					bool get_result = false;
+					word1_container.push(word1);
+					words.push(word1_container);
+					while (!words.empty())
+					{
+						vector<string>neighbors;
+						stack<string>tmp_stack = words.front();
+						words.pop();
+						string tmp_word = tmp_stack.top();						
+						//生成一个单词的neighbors
+						for (int i = 0; i < tmp_word.size(); i++)
+						{
+							for (char character = 'a'; character <= 'z'; character++)
+							{
+								string new_word;
+								//生成替换了一个字母了的new_word
+								for (int k = 0; k < tmp_word.size(); k++)
+								{
+									if (k == i)new_word += character;
+									else new_word += tmp_word[k];
+								}
+								//如果不是有效单词，直接下一个循环
+								if (!is_a_word(new_word, dictionary)) continue;
+								//是有效单词，如果已经在neighbors里面出现过了，就直接下一个循环
+								bool already_in_neighbor = false;
+								for (auto s : neighbors)
+								{
+									if (s == new_word)
+									{
+										already_in_neighbor = true;
+										break;
+									}
+								}
+								if (already_in_neighbor == true) continue;
+								neighbors.push_back(new_word);
+
+							}
+						}
+						/*
+						for (auto a : neighbors)
+						{
+							cout << a << endl;
+						}
+						*/
+						
+						
+						//对于每个是tmp_stack的top的neighbor的单词
+						for (auto nei_word : neighbors)
+						{
+							//没有出现在ladder中过
+							if (!is_in_ladder(nei_word, tmp_stack))
+							{
+								//如果恰好是word2 那么将手上正在处理的tmp_stack写入final_result，并跳出循环
+								if (nei_word == word2)
+								{
+									get_result = true;
+									tmp_stack.push(nei_word);
+									while (tmp_stack.size() != 0)
+									{
+										final_result.push(tmp_stack.top());
+										tmp_stack.pop();
+									}
+									break;
+								}
+								else
+								{
+									stack<string> tmp_stack2(tmp_stack);
+									tmp_stack2.push(nei_word);
+									words.push(tmp_stack2);
+								}
+							}
+							else continue;
+						}
+						if (get_result == true) break;
+
+					}
+					if (final_result.size() == 0) cout << "The ladder from " << word1 << "to " << word2 << " doesn't exist.";
+					else
+					{
+						cout << "A ladder from " << word1 << " to " << word2 << ":" << endl;
+						while (final_result.size() != 0)
+						{
+							cout << final_result.top() << " ";
+							final_result.pop();
+						}
+					}
+					
+
+				
+
 				}
-				catch (word_length_error) { cout << "the words should have the same length" << endl; }
-				catch (same_word) { cout << "the words should be different" << endl; }
-				catch (invalid_word) { cout << "the words must be valid" << endl; }
+				catch (word_length_error) { cout << "the words should have the same length, try again" << endl; }
+				catch (same_word) { cout << "the words should be different, try again" << endl; }
+				catch (invalid_word) { cout << "the words must be valid, try again" << endl; }
 			}
 		}
 		catch (file_not_found) { cout << "the file cannot be found, try again" << endl; }
 	}
+	
 
 	//cout << "dictionary got!" << endl;
-    //cout << is_a_word("good", dictionary) << endl;
-
+  //  cout << is_a_word("zsd", dictionary) << endl;
+	system("pause");
 }
 
 bool is_a_word(const string & word1, const vector<string>& dictionary)
@@ -86,9 +196,7 @@ bool is_a_word(const string & word1, const vector<string>& dictionary)
 			middle = (head + end) / 2;
 		}
 	}
-
-
-
+	if (head == middle) return false;
 }
 
 void get_dictionary(const string & filename, vector<string>& dictionary)
@@ -100,4 +208,44 @@ void get_dictionary(const string & filename, vector<string>& dictionary)
 	{
 		dictionary.push_back(word);
 	}
+}
+
+/*
+bool is_neighbor(const string word1, const string word2)
+{
+	int differ_num = 0;
+	for (int i = 0; i < word1.size(); i++)
+	{
+		if (word1[i] != word2[i])differ_num++;
+	}
+	
+	
+}
+*/
+
+bool is_in_ladder(const string word,  stack<string>& ladder)
+{
+	stack<string>tmp_ladder;
+	bool same_word = false;
+	while (ladder.size() != 0)
+	{
+		//如果ladder顶端就是word 直接修改bool然后跳出循环
+		if (ladder.top() == word)
+		{
+			same_word = true;
+			break;
+		}
+		//否则将top的元素推入新的辅助stack中
+		tmp_ladder.push(ladder.top());
+		//并删除掉原stack的top元素
+		ladder.pop();
+	}
+	//复位stack
+	while (tmp_ladder.size() != 0)
+	{
+		ladder.push(tmp_ladder.top());
+		tmp_ladder.pop();
+	}	
+	if (same_word == true)	return true;
+	else return false;
 }
