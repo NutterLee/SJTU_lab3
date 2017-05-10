@@ -1,33 +1,33 @@
-#include<stack>
+ï»¿#include<stack>
 #include<queue>
 #include<iostream>
 #include<vector>
 #include<fstream>
 #include<string>
+#include<set>
 #include<cctype>
 #include<algorithm>
 
 using namespace std;
 
-//×ÖµäÖĞ²éÕÒwordÄ£¿é
-//ÓÉÓÚ¼¸ºõ²»ĞèÒª¸Ä±ä×ÖµäÎÄ¼ş£¬²ÉÓÃvector´æ´¢
-//Ëù¸øµÄ×ÖµäÎÄ¼şÒÑ¾­ÅÅºÃĞò£¬ËùÒÔÖ±½ÓÓÃ¶ş·Ö²éÕÒ
-//word1ÊÇ´ı²éÕÒµÄµ¥´Ê£¬dictionaryÊÇ´æ´¢wordµÄvector
+//å­—å…¸ä¸­æŸ¥æ‰¾wordæ¨¡å—
+//ç”±äºå‡ ä¹ä¸éœ€è¦æ”¹å˜å­—å…¸æ–‡ä»¶ï¼Œé‡‡ç”¨vectorå­˜å‚¨
+//æ‰€ç»™çš„å­—å…¸æ–‡ä»¶å·²ç»æ’å¥½åºï¼Œæ‰€ä»¥ç›´æ¥ç”¨äºŒåˆ†æŸ¥æ‰¾
+//word1æ˜¯å¾…æŸ¥æ‰¾çš„å•è¯ï¼Œdictionaryæ˜¯å­˜å‚¨wordçš„vector
 bool is_a_word(const string& word1, const vector<string>& dictionary);
 
 
-//ÎÄ¼şĞ´Èëµ½vectorÄ£¿é
-//filenameÊÇÓÃ»§ÊäÈëµÄÎÄ¼şµÄÃû×Ö£¬vectorÊÇ´æ´¢wordµÄ
-//ÅĞ¶ÏÎÄ¼şÊÇ·ñ´æÔÚ£¬²»´æÔÚÅ×³öÒì³££¬£¨ÒªÇóÖØĞÂÊäÈëÔÚµ÷ÓÃÕâ¸öº¯ÊıµÄÄÇÒ»²ãÊµÏÖ£©
+//æ–‡ä»¶å†™å…¥åˆ°vectoræ¨¡å—
+//filenameæ˜¯ç”¨æˆ·è¾“å…¥çš„æ–‡ä»¶çš„åå­—ï¼Œvectoræ˜¯å­˜å‚¨wordçš„
+//åˆ¤æ–­æ–‡ä»¶æ˜¯å¦å­˜åœ¨ï¼Œä¸å­˜åœ¨æŠ›å‡ºå¼‚å¸¸ï¼Œï¼ˆè¦æ±‚é‡æ–°è¾“å…¥åœ¨è°ƒç”¨è¿™ä¸ªå‡½æ•°çš„é‚£ä¸€å±‚å®ç°ï¼‰
 void get_dictionary(const string& filename, vector<string>& dictionary);
 
-//ÅĞ¶ÏÊÇ²»ÊÇneighbor
-//bool is_neighbor(const string word1, const string word2);
-bool is_in_ladder2(const string& word, queue<stack<string>>& ladder);
+bool is_neighbor(const string word1, const string word2);
+bool is_in_ladder2(const string word, stack<string>& ladder);
 
-//ÅĞ¶ÏÒ»¸öwordÊÇ²»ÊÇÔÚladder£¨stack£©ÀïÃæ
+//åˆ¤æ–­ä¸€ä¸ªwordæ˜¯ä¸æ˜¯åœ¨ladderï¼ˆstackï¼‰é‡Œé¢
 bool is_in_ladder(const string word,  stack<string>& ladder);
-//´íÎó´¦ÀíÀà
+//é”™è¯¯å¤„ç†ç±»
 class invalid_word{};
 class word_length_error{};
 class same_word{};
@@ -45,8 +45,7 @@ int main()
 	{
 		try
 		{
-			queue<stack<string>> words;
-			stack<string> final_result;
+
 
 			cout << "Dictionary file name? ";
 			cin >> filename;			
@@ -54,24 +53,36 @@ int main()
 			
 			while (true)
 			{
+				queue<stack<string>> words;
+				stack<string> final_result;
+				set<string>word_collection;
 				try
 				{
 					cout <<endl<< "Word #1 (or Enter q to quit):";
 					cin >> word1;
-					if (word1 == "q") return 0;
+					if (word1 == "q")
+					{
+						cout << "Have a nice day."<<endl;
+						return 0;
+					}
+
 					cout << "Word #2 (or Enter q to quit):";
 					cin >> word2;
-					if (word2=="q")return 0;
+					if (word2 == "q")
+					{
+						cout << "Have a nice day."<<endl;
+						return 0;
+					}
 
-					//²»¹ÜÊäÈëµÄÊÇ´óĞ´»¹ÊÇĞ¡Ğ´£¬Ò»ÂÉ×ª»»³ÉĞ¡Ğ´
+					//ä¸ç®¡è¾“å…¥çš„æ˜¯å¤§å†™è¿˜æ˜¯å°å†™ï¼Œä¸€å¾‹è½¬æ¢æˆå°å†™
 					transform(word1.begin(), word1.end(), word1.begin(), ::tolower);
 					transform(word2.begin(), word2.end(), word2.begin(), ::tolower);
-					//³¤¶È²»µÈ£¬ÏàÍ¬µ¥´Ê£¬²»ÊÇµ¥´Ê£¬¶¼±¨´í
+					//é•¿åº¦ä¸ç­‰ï¼Œç›¸åŒå•è¯ï¼Œä¸æ˜¯å•è¯ï¼Œéƒ½æŠ¥é”™
 					if (word1.length() != word2.length()) throw word_length_error();
 					if (word1 == word2) throw same_word();
 					if (!is_a_word(word1,dictionary) || !is_a_word(word2,dictionary))throw invalid_word();
 
-					//½ÓÏÂÀ´Ó¦¸ÃÊÇ¾ßÌå´¦Àí¹ı³Ì£¬Á½¸öµ¥´ÊÖ®¼äµÄladder½¨Á¢Íê±ÏÔò½øÈëÏÂÒ»ÂÖÑ­»·
+					//æ¥ä¸‹æ¥åº”è¯¥æ˜¯å…·ä½“å¤„ç†è¿‡ç¨‹ï¼Œä¸¤ä¸ªå•è¯ä¹‹é—´çš„ladderå»ºç«‹å®Œæ¯•åˆ™è¿›å…¥ä¸‹ä¸€è½®å¾ªç¯
 					stack<string> word_container;
 					bool get_result = false;
 					word_container.push(word1);
@@ -83,22 +94,19 @@ int main()
 						stack<string>tmp_stack = words.front();
 						words.pop();
 						string tmp_word = tmp_stack.top();						
-						//Éú³ÉÒ»¸öµ¥´ÊµÄneighbors,²¢´æÈëÃûÎªneighborsµÄstackÖĞ
+						//ç”Ÿæˆä¸€ä¸ªå•è¯çš„neighbors,å¹¶å­˜å…¥åä¸ºneighborsçš„stackä¸­
 						for (int i = 0; i < tmp_word.size(); i++)
 						{
 							for (char character = 'a'; character <= 'z'; character++)
 							{
-								string new_word;
-								//Éú³ÉÌæ»»ÁËÒ»¸ö×ÖÄ¸ÁËµÄnew_word
-								for (int k = 0; k < tmp_word.size(); k++)
-								{
-									if (k == i)new_word += character;
-									else new_word += tmp_word[k];
-								}
-								//Èç¹û²»ÊÇÓĞĞ§µ¥´Ê£¬Ö±½ÓÏÂÒ»¸öÑ­»·
+								string new_word (tmp_word);
+								//ç”Ÿæˆæ›¿æ¢äº†ä¸€ä¸ªå­—æ¯äº†çš„new_word
+								new_word[i] = character;
+								//å¦‚æœä¸æ˜¯æœ‰æ•ˆå•è¯ï¼Œç›´æ¥ä¸‹ä¸€ä¸ªå¾ªç¯
+								if (new_word == tmp_word)continue;
 								if (!is_a_word(new_word, dictionary)) continue;
-								//ÊÇÓĞĞ§µ¥´Ê£¬Èç¹ûÒÑ¾­ÔÚneighborsÀïÃæ³öÏÖ¹ıÁË£¬¾ÍÖ±½ÓÏÂÒ»¸öÑ­»·								
-								//½èÓÃÒ»ÏÂis_in_ladderº¯Êı£¬Èç¹ûnew_wordÒÑ¾­ÔÚneighborÀïÃæÁË Ö±½ÓÏÂÒ»¸öÑ­»·
+								//æ˜¯æœ‰æ•ˆå•è¯ï¼Œå¦‚æœå·²ç»åœ¨neighborsé‡Œé¢å‡ºç°è¿‡äº†ï¼Œå°±ç›´æ¥ä¸‹ä¸€ä¸ªå¾ªç¯								
+								//å€Ÿç”¨ä¸€ä¸‹is_in_ladderå‡½æ•°ï¼Œå¦‚æœnew_wordå·²ç»åœ¨neighboré‡Œé¢äº† ç›´æ¥ä¸‹ä¸€ä¸ªå¾ªç¯
 								if (is_in_ladder(new_word, neighbors))continue;
 								/*
 								for (auto s : neighbors)
@@ -112,24 +120,19 @@ int main()
 								if (already_in_neighbor == true) continue;
 								*/
 								neighbors.push(new_word);
-
 							}
 						}
-						/*
-						for (auto a : neighbors)
-						{
-							cout << a << endl;
-						}
-						*/			
-						
-						//¶ÔÓÚÃ¿¸öÊÇtmp_stackµÄtopµÄneighborµÄµ¥´Ê
+								
+						//å¯¹äºæ¯ä¸ªæ˜¯tmp_stackçš„topçš„neighborçš„å•è¯
 						while(neighbors.size()!=0)
 						{
 							string nei_word = neighbors.top();
 							neighbors.pop();
-							//Ã»ÓĞ³öÏÖÔÚladderÖĞ¹ı
-							if (!is_in_ladder(nei_word, tmp_stack))
-							{	//Èç¹ûÇ¡ºÃÊÇword2 ÄÇÃ´½«ÊÖÉÏÕıÔÚ´¦ÀíµÄtmp_stackĞ´Èëfinal_result£¬²¢Ìø³öÑ­»·
+							if (word_collection.find(nei_word) != word_collection.end()) continue;
+							else word_collection.insert(nei_word);
+							//æ²¡æœ‰å‡ºç°åœ¨ladderä¸­è¿‡
+							if (!is_in_ladder2(nei_word, tmp_stack))
+							{	//å¦‚æœæ°å¥½æ˜¯word2 é‚£ä¹ˆå°†æ‰‹ä¸Šæ­£åœ¨å¤„ç†çš„tmp_stackå†™å…¥final_resultï¼Œå¹¶è·³å‡ºå¾ªç¯
 								if (nei_word == word2)
 								{
 									get_result = true;
@@ -143,30 +146,32 @@ int main()
 								}
 								else
 								{
-									//·ñÔò½«×ßµ½ÕâÒ»²½µÄstack¿½±´Ò»·İºó±£´æµ½queueÖĞ
+									//å¦åˆ™å°†èµ°åˆ°è¿™ä¸€æ­¥çš„stackæ‹·è´ä¸€ä»½åä¿å­˜åˆ°queueä¸­
 									stack<string> tmp_stack2(tmp_stack);
 									tmp_stack2.push(nei_word);
 									words.push(tmp_stack2);
 								}
-							}
-						
+							}						
 						}
 						if (get_result == true) break;
-
 					}
-					//¶ÔµÃµ½½á¹ûµÄ×îºó´¦Àí
-					if (final_result.size() == 0) cout << "The ladder from " << word1 << "to " << word2 << " doesn't exist.";
+					//å¯¹å¾—åˆ°ç»“æœçš„æœ€åå¤„ç†
+					if (final_result.size() == 0) cout << "The ladder from " << word1 << " to " << word2 << " doesn't exist.";
 					else
 					{
-						cout << "A ladder from " << word1 << " to " << word2 << ":" << endl;
+						cout << "A ladder from " << word2 << " to " << word1<< ":" << endl;
 						stack<string> out_put;
 						while (final_result.size() != 0)
 						{
-							cout << final_result.top() << " ";
+							out_put.push( final_result.top());
 							final_result.pop();
 						}
-					}				
-
+						while (out_put.size() != 0)
+						{
+							cout << out_put.top() << " ";
+							out_put.pop();
+						}
+					}		
 				}
 				catch (word_length_error) { cout << "the words should have the same length, try again" << endl; }
 				catch (same_word) { cout << "the words should be different, try again" << endl; }
@@ -175,10 +180,6 @@ int main()
 		}
 		catch (file_not_found) { cout << "the file cannot be found, try again" << endl; }
 	}
-	
-
-	//cout << "dictionary got!" << endl;
-  //  cout << is_a_word("zsd", dictionary) << endl;
 	system("pause");
 }
 
@@ -215,18 +216,6 @@ void get_dictionary(const string & filename, vector<string>& dictionary)
 	}
 }
 
-/*
-bool is_neighbor(const string word1, const string word2)
-{
-	int differ_num = 0;
-	for (int i = 0; i < word1.size(); i++)
-	{
-		if (word1[i] != word2[i])differ_num++;
-	}
-	
-	
-}
-*/
 
 bool is_in_ladder(const string word,  stack<string>& ladder)
 {
@@ -234,18 +223,18 @@ bool is_in_ladder(const string word,  stack<string>& ladder)
 	bool same_word = false;
 	while (ladder.size() != 0)
 	{
-		//Èç¹ûladder¶¥¶Ë¾ÍÊÇword Ö±½ÓĞŞ¸ÄboolÈ»ºóÌø³öÑ­»·
+		//å¦‚æœladderé¡¶ç«¯å°±æ˜¯word ç›´æ¥ä¿®æ”¹boolç„¶åè·³å‡ºå¾ªç¯
 		if (ladder.top() == word)
 		{
 			same_word = true;
 			break;
 		}
-		//·ñÔò½«topµÄÔªËØÍÆÈëĞÂµÄ¸¨ÖústackÖĞ
+		//å¦åˆ™å°†topçš„å…ƒç´ æ¨å…¥æ–°çš„è¾…åŠ©stackä¸­
 		tmp_ladder.push(ladder.top());
-		//²¢É¾³ıµôÔ­stackµÄtopÔªËØ
+		//å¹¶åˆ é™¤æ‰åŸstackçš„topå…ƒç´ 
 		ladder.pop();
 	}
-	//¸´Î»stack
+	//å¤ä½stack
 	while (tmp_ladder.size() != 0)
 	{
 		ladder.push(tmp_ladder.top());
@@ -255,30 +244,42 @@ bool is_in_ladder(const string word,  stack<string>& ladder)
 	else return false;
 }
 
-bool is_in_ladder2(const string& word, queue<stack<string>>& ladder)
+bool is_neighbor(const string word1, const string word2)
 {
-	queue<stack<string>> tmp_queue ;
-	bool is_in = false;
-	while (ladder.size() != 0)
+	int differ_num = 0;
+	for (int i = 0; i < word1.size(); i++)
 	{
-		stack<string> this_stack = ladder.front();
-		ladder.pop();
-		if (is_in_ladder(word, this_stack))
+		if ((word1[i] != word2[i])) differ_num++;
+	}
+	if (differ_num == 1||differ_num==0)return true;
+	else return false;
+}
+
+bool is_in_ladder2(const string word, stack<string>& ladder)
+{
+	stack<string>tmp_ladder;
+	bool cannot_use = false;
+	tmp_ladder.push(ladder.top());
+	ladder.pop();
+	while (ladder.size() !=0)
+	{
+		//å¦‚æœladderé¡¶ç«¯å°±æ˜¯wordæœ¬èº«æˆ–è€…neighbors ç›´æ¥ä¿®æ”¹boolç„¶åè·³å‡ºå¾ªç¯
+		if (is_neighbor(word, ladder.top()))
 		{
-			is_in = true;
-			tmp_queue.push(this_stack);
+			cannot_use = true;
 			break;
 		}
-		else
-		{
-			tmp_queue.push(this_stack);
-		}
+		//å¦åˆ™å°†topçš„å…ƒç´ æ¨å…¥æ–°çš„è¾…åŠ©stackä¸­
+		tmp_ladder.push(ladder.top());
+		//å¹¶åˆ é™¤æ‰åŸstackçš„topå…ƒç´ 
+		ladder.pop();
 	}
-	while (tmp_queue.size() != 0)
+	//å¤ä½stack
+	while (tmp_ladder.size() != 0)
 	{
-		ladder.push(tmp_queue.front());
-		tmp_queue.pop();
+		ladder.push(tmp_ladder.top());
+		tmp_ladder.pop();
 	}
-	if (is_in == true) return true;
+	if (cannot_use == true)	return true;
 	else return false;
 }
