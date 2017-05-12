@@ -1,4 +1,6 @@
 ﻿  main.cpp
-c:\users\17370\onedrive\cs-homework\c++\lab3\sjtu_lab3\lab3\main.cpp(98): warning C4715: “is_a_word”: 不是所有的控件路径都返回值
+c:\users\17370\onedrive\cs-homework\c++\lab3\sjtu_lab3\lab3\main.cpp(98): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\17370\onedrive\cs-homework\c++\lab3\sjtu_lab3\lab3\main.cpp(250): warning C4018: “<”: 有符号/无符号不匹配
+c:\users\17370\onedrive\cs-homework\c++\lab3\sjtu_lab3\lab3\main.cpp(206): warning C4715: “is_a_word”: 不是所有的控件路径都返回值
   lab3.vcxproj -> C:\Users\17370\OneDrive\CS-HOMEWORK\C++\lab3\SJTU_lab3\Debug\lab3.exe
   lab3.vcxproj -> C:\Users\17370\OneDrive\CS-HOMEWORK\C++\lab3\SJTU_lab3\Debug\lab3.pdb (Full PDB)
