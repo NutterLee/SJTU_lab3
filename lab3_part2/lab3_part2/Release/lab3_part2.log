@@ -1,10 +1,10 @@
 ﻿  main.cpp
-main.cpp(57): warning C4018: “>”: 有符号/无符号不匹配
-main.cpp(88): warning C4018: “<”: 有符号/无符号不匹配
+main.cpp(59): warning C4018: “>”: 有符号/无符号不匹配
+main.cpp(89): warning C4018: “<”: 有符号/无符号不匹配
   正在生成代码
-  1 of 501 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    15 functions had inline decision re-evaluated but remain unchanged
+  5 of 508 functions ( 1.0%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    19 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
   lab3_part2.vcxproj -> C:\Users\17370\OneDrive\CS-HOMEWORK\C++\lab3\SJTU_lab3\lab3_part2\Release\lab3_part2.exe
   lab3_part2.vcxproj -> C:\Users\17370\OneDrive\CS-HOMEWORK\C++\lab3\SJTU_lab3\lab3_part2\Release\lab3_part2.pdb (Full PDB)
