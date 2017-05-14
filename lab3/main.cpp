@@ -52,7 +52,6 @@ int main()
 						cout << "Have a nice day."<<endl;
 						return 0;
 					}
-
 					cout << "Word #2 (or Enter q to quit):";
 					cin >> word2;
 					if (word2 == "q")
@@ -67,7 +66,8 @@ int main()
 					//长度不等，相同单词，不是单词，都报错
 					if (word1.length() != word2.length()) throw word_length_error();
 					if (word1 == word2) throw same_word();
-					if (dictionary.find(word1)==dictionary.end() || dictionary.find(word2)==dictionary.end())throw invalid_word();
+					//optional 去除了对word2的检测
+					if (dictionary.find(word1)==dictionary.end())throw invalid_word();
 
 					//接下来应该是具体处理过程，两个单词之间的ladder建立完毕则进入下一轮循环
 					stack<string> word_container;
@@ -76,12 +76,11 @@ int main()
 					words.push(word_container);
 					while (!words.empty())
 					{
-						//vector<string>neighbors;
-						//stack<string>neighbors;
+						//先对queue第一个元素进行处理
 						stack<string>tmp_stack = words.front();
 						words.pop();
-						string tmp_word = tmp_stack.top();						
-						//生成一个单词的neighbors,并存入名为neighbors的stack中
+						string tmp_word = tmp_stack.top();
+						//每生成一个neighbor就处理了
 						for (int i = 0; i < tmp_word.size(); i++)
 						{
 							for (char character = 'a'; character <= 'z'; character++)
@@ -89,42 +88,34 @@ int main()
 								string new_word (tmp_word);
 								//生成替换了一个字母了的new_word
 								new_word[i] = character;
+								//恰巧是word2 就不用继续了，写入存储的stack然后退出循环
+								if (new_word == word2)
+								{
+									get_result = true;
+									tmp_stack.push(new_word);
+									while (tmp_stack.size() != 0)
+									{
+										final_result.push(tmp_stack.top());
+										tmp_stack.pop();
+									}
+									break;
+								}
 								//如果不是有效单词，直接下一个循环
 								if (dictionary.find(new_word)==dictionary.end()) continue;								
 								if (new_word == tmp_word) continue;
 								if (word_collection.find(new_word) != word_collection.end()) continue;	
 								else word_collection.insert(new_word);
-									//如果恰好是word2 那么将手上正在处理的tmp_stack写入final_result，并跳出循环
-								if (new_word == word2)
-									{
-										get_result = true;
-										tmp_stack.push(new_word);
-										while (tmp_stack.size() != 0)
-										{
-											final_result.push(tmp_stack.top());
-											tmp_stack.pop();
-										}
-										break;
-									}
-								else
-									{
-										//否则将走到这一步的stack拷贝一份后保存到queue中
-										stack<string> tmp_stack2=tmp_stack;
-										tmp_stack2.push(new_word);
-										words.push(tmp_stack2);
-									}
-								
-								//是有效单词，如果已经在neighbors里面出现过了，就直接下一个循环								
-								//借用一下is_in_ladder函数，如果new_word已经在neighbor里面了 直接下一个循环
-							//	if (is_in_ladder(new_word, neighbors))continue;
-								//neighbors.push(new_word);
+									//如果恰好是word2 那么将手上正在处理的tmp_stack写入final_result，并跳出循环														
+									//否则将走到这一步的stack拷贝一份后保存到queue中
+								stack<string> tmp_stack2=tmp_stack;
+								tmp_stack2.push(new_word);
+								words.push(tmp_stack2);	
 							}
 						}								
 						//对于每个是tmp_stack的top的neighbor的单词
 						if (get_result == true) break;
 					}
-
-					//对得到结果的最后处理
+					//对得到结果的最后处理，如果存储的stack为空的 则说明没有找到
 					if (final_result.size() == 0) cout << "The ladder from " << word1 << " to " << word2 << " doesn't exist.";
 					else
 					{
