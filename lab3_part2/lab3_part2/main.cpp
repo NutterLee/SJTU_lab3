@@ -1,3 +1,4 @@
+//做了以大写字母开头的feature
 #include<iostream>
 #include<map>
 #include<vector>
@@ -34,8 +35,8 @@ int main()
 		{
 			//文件输入
 			cout << "Input file name? (Enter q to quit)";
-			cin >> filename;
-			if (filename == "q")return 0;
+			getline(cin, filename);			
+			if (filename == "")return 0;
 			file.open(filename);
 			if (!file.is_open()) throw file_not_exist();
 			string word;
@@ -64,7 +65,7 @@ int main()
 					{
 						//生成输出字符串
 						cout << endl << "# of random words to generate (0 to quit)?  ";
-						int num_to_generate = 0;
+						int num_to_generate = 0;					
 						cin >> num_to_generate;
 						if (num_to_generate == 0)
 						{
@@ -83,6 +84,7 @@ int main()
 	return 0;
 }
 
+//map的生成函数，num是输入的N的value
 void map_generator(int num, fstream & file, vector<string>& word_collection,map<vector<string>, vector<string>>& collections, map<vector<string>, vector<string>>& head_collections, map<vector<string>, vector<string>>& end_collections)
 {
 	num = num - 1;
@@ -122,6 +124,7 @@ void map_generator(int num, fstream & file, vector<string>& word_collection,map<
 	}	
 }
 
+//随机数生成函数，生成num1和num2之间的随机数，包括num1和num2
 int random(int num1, int num2)
 {
 	//num1 和 num2 大小无所谓的
@@ -135,12 +138,15 @@ int random(int num1, int num2)
 	return (rand()%(num2-num1+1))+num1;
 }
 
+//生成输出文本，num是需要生成的文本的数量
 string generate_text(int num, map<vector<string>, vector<string>>& collections, map<vector<string>, vector<string>>& head_collections, map<vector<string>, vector<string>>& end_collections)
 {
 	string result = "";
+	//count记录已经加入字符串的长度
 	int count = 0;
 	int size_of_key = 0;
 	vector<string>tmp_key;
+	//先从head_collection里面随机挑选一个作为生成字符串的开头
 	//pos指向的是要创建的result的刚开始几个字符的来源的那个key
 	map<vector<string>, vector<string>>::iterator pos = head_collections.begin();
 	int random_num = random(0, head_collections.size() - 1);
@@ -149,6 +155,7 @@ string generate_text(int num, map<vector<string>, vector<string>>& collections, 
 	//tmp_key 即是随机访问的key
 	tmp_key = pos->first;
 	size_of_key = (pos->first).size();
+	//先将tmp_key中的内容写入到string中
 	for (auto word : tmp_key)
 	{
 		result = result + word + " ";
@@ -159,6 +166,8 @@ string generate_text(int num, map<vector<string>, vector<string>>& collections, 
 			return result;
 		}
 	}
+
+	//写入字符串中间部分
 	while (count < num)
 	{
 		//随机读取的key对应的值中的 一个值		
@@ -166,6 +175,8 @@ string generate_text(int num, map<vector<string>, vector<string>>& collections, 
 		//add_to_key中存的是来自于key所对应的若干个值中的随机的一个
 		int range = collections[tmp_key].size()-1;
 		add_to_key = (collections[tmp_key])[random(0, range)];
+
+		//如果选到的word还是以大写字母开头那就重新选择一个
 		while (add_to_key[0]>='A'&&add_to_key[0]<='Z'&&range>0)
 			add_to_key = (collections[tmp_key])[random(0, range)];
 		if (count < num)

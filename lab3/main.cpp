@@ -1,4 +1,5 @@
-﻿#include<stack>
+﻿//做了第二个单词不是dictionary中有效的单词的部分
+#include<stack>
 #include<queue>
 #include<iostream>
 #include<vector>
@@ -24,8 +25,7 @@ class same_word{};
 class file_not_found{};
 
 int main()
-{
-	//vector<string>dictionary;
+{	
 	unordered_set<string>dictionary;
 	string filename;
 	string word1;
@@ -37,11 +37,13 @@ int main()
 			cout << "Dictionary file name? ";
 			cin >> filename;			
 			get_dictionary(filename, dictionary);
-			
+
 			while (true)
 			{
 				queue<stack<string>> words;
+				//final_result存储的是最后的结果
 				stack<string> final_result;
+				//word_collection 是存储已经使用过的单词，因为要大量查找，用unordered_set比较好
 				unordered_set<string>word_collection;
 				try
 				{
@@ -64,7 +66,7 @@ int main()
 					//不管输入的是大写还是小写，一律转换成小写
 					transform(word1.begin(), word1.end(), word1.begin(), ::tolower);
 					transform(word2.begin(), word2.end(), word2.begin(), ::tolower);
-					//长度不等，相同单词，不是单词，都报错
+					//长度不等，相同单词，word1不是单词，都报错
 					if (word1.length() != word2.length()) throw word_length_error();
 					if (word1 == word2) throw same_word();
 					if (dictionary.find(word1)==dictionary.end() || dictionary.find(word2)==dictionary.end())throw invalid_word();
@@ -76,8 +78,6 @@ int main()
 					words.push(word_container);
 					while (!words.empty())
 					{
-						//vector<string>neighbors;
-						//stack<string>neighbors;
 						stack<string>tmp_stack = words.front();
 						words.pop();
 						string tmp_word = tmp_stack.top();						
@@ -124,7 +124,8 @@ int main()
 						if (get_result == true) break;
 					}
 
-					//对得到结果的最后处理
+					//对得到结果的最后处理，输出结果
+					//如果final_result是空的那说明没有找到
 					if (final_result.size() == 0) cout << "The ladder from " << word1 << " to " << word2 << " doesn't exist.";
 					else
 					{
@@ -152,6 +153,7 @@ int main()
 	return 0;
 }
 
+//dictionary的写入程序，将dictionary的每一个单词写入到set中
 void get_dictionary(const string & filename, unordered_set<string>& dictionary)
 {
 	ifstream file(filename);
