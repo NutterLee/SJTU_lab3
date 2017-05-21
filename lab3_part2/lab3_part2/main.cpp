@@ -14,6 +14,7 @@ using namespace std;
 class file_not_exist{};
 class num_too_large{};
 class num_too_small{};
+class sentence_length_error{};
 //map生成，参数是fstream 文件和 要操作的map以及key的文件数
 void map_generator(int num,fstream& file, vector<string>& word_collection,map<vector<string>, vector<string>>& collections, map<vector<string>, vector<string>>& head_collections, map<vector<string>, vector<string>>& end_collections);
 //随机数生成，生成num1,num2之间的一个随机数，包括num1和num2
@@ -63,20 +64,27 @@ int main()
 					map_generator(num_of_grams, file,word_collection, collections,head_collections,end_collections);
 					while (true)
 					{
-						//生成输出字符串
-						cout << endl << "# of random words to generate (0 to quit)?  ";
-						int num_to_generate = 0;					
-						cin >> num_to_generate;
-						if (num_to_generate == 0)
+						try 
 						{
-							cout << endl << "Exiting.";
-							return 0;
+							//生成输出字符串
+							cout << endl << "# of random words to generate (0 to quit)?  ";
+							int num_to_generate = 0;
+							cin >> num_to_generate;
+							if (num_to_generate == 0)
+							{
+								cout << endl << "Exiting.";
+								return 0;
+							}
+							if (num_to_generate < num_of_grams) throw sentence_length_error();
+							//调用generate_text函数生成字符串，因为要求是完整的句子，所以很有可能输出的句子比要求的句子长度要长一些
+							cout << generate_text(num_to_generate, collections, head_collections, end_collections) << endl;
 						}
-						cout << generate_text(num_to_generate, collections,head_collections,end_collections) << endl;
-					}
+						catch (sentence_length_error) { cerr << "the length of a sentence must be greater than N" << endl; }
+					}					
 				}
 				catch (num_too_small) { cerr << "the value of N must be greater than 1. " << endl; }
 				catch (num_too_large) { cerr << "the value of N should not be greater than the number of words in file" << endl; }
+				
 			}
 		}
 		catch (file_not_exist) { cerr << "the file cannot be found, try again."<<endl; }	
@@ -104,9 +112,10 @@ void map_generator(int num, fstream & file, vector<string>& word_collection,map<
 			}
 			head_collections[head_key].push_back(word_collection[(i + num) % word_collection.size()]);
 		}
-
-		//如果以 . ! ?结尾，写一份存入到end中
-		if (word_collection[i][size - 1] == '.' || word_collection[i][size - 1] == '!' || word_collection[i][size - 1] == '?')
+		//如果某个单词的后num-1个单词以 . ! ?结尾，写一份存入到end中，end_mark就是num-1个单词的size，end_pos指向了那个单词的最后一个字母
+		int end_mark = (i + num ) % word_collection.size();
+		int end_pos = word_collection[end_mark].size()-1;
+		if (word_collection[end_mark][end_pos] == '.' || word_collection[end_mark][end_pos] == '!' || word_collection[end_mark][end_pos] == '?')
 		{
 			for (int k = i; k < i + num; k++)
 			{
@@ -114,7 +123,6 @@ void map_generator(int num, fstream & file, vector<string>& word_collection,map<
 			}
 			end_collections[end_key].push_back(word_collection[(i + num) % word_collection.size()]);
 		}
-
 		for (int k = i; k < i + num; k++)
 		{			
 			key.push_back(word_collection[k%word_collection.size()]);
@@ -166,9 +174,8 @@ string generate_text(int num, map<vector<string>, vector<string>>& collections, 
 			return result;
 		}
 	}
-
 	//写入字符串中间部分
-	while (count < num)
+	while (count < num-1)
 	{
 		//随机读取的key对应的值中的 一个值		
 		string add_to_key = "";
@@ -189,16 +196,26 @@ string generate_text(int num, map<vector<string>, vector<string>>& collections, 
 		tmp_key.erase(tmp_key.cbegin());
 		tmp_key.push_back(add_to_key);
 	}
-	if (count < num)
-	{
+
 		int end_range = end_collections[tmp_key].size() - 1;
-		if (end_range != -1)result = result + " " + end_collections[tmp_key][random(0, end_range)];
-		else
+		//未到句子末尾继续读
+		while (end_range == -1)
 		{
-			int range = collections[tmp_key].size();
-			result = result + " " + collections[tmp_key][random(0, range)] + '.';
+			//随机读取的key对应的值中的 一个值		
+			string add_to_key = "";
+			//add_to_key中存的是来自于key所对应的若干个值中的随机的一个
+			int range = collections[tmp_key].size() - 1;
+			add_to_key = (collections[tmp_key])[random(0, range)];
+			//如果选到的word还是以大写字母开头那就重新选择一个
+			while (add_to_key[0] >= 'A'&&add_to_key[0] <= 'Z'&&range>0)
+				add_to_key = (collections[tmp_key])[random(0, range)];
+			result = result + add_to_key + " ";
+			count++;
+			//对tmp_key的后续处理,删除第一个元素，加上add_to_key
+			tmp_key.erase(tmp_key.cbegin());
+			tmp_key.push_back(add_to_key);
+			end_range = end_collections[tmp_key].size() - 1;
 		}
-	}
-	else return result + '.';	
+		result = result + " " + end_collections[tmp_key][random(0, end_range)];	
 	return result;	
 }
